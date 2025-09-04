@@ -1,0 +1,6 @@
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelector:
+      matchLabels:
+        app.kubernetes.io/instance: prom-stack 
+

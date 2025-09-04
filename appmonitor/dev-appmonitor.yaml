@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dev
+  labels:
+    app: nodejs-app-monitor
+    release: prom-stack
+    app.kubernetes.io/instance: prom-stack
+        
+spec:
+  namespaceSelector:
+    matchNames:
+    - dev
+  selector:
+    matchLabels:
+      env: dev
+
+  endpoints:
+    - port: metrics
+      interval: 5s

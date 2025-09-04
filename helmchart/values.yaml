@@ -1,0 +1,61 @@
+replicaCount: 1
+
+image:
+  repository: 01447/web-server
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: NodePort
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Redis Configuration
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: "7-alpine"
+  service:
+    port: 6379
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+# MongoDB Configuration  
+mongodb:
+  enabled: true
+  image:
+    repository: mongo
+    tag: "7"
+  service:
+    port: 27017
+  auth:
+    rootUsername: admin
+    rootPassword: password
+    database: nodejs_app
+  persistence:
+    enabled: true
+    size: 2Gi
+    storageClass: ""
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi

@@ -1,0 +1,42 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nodejs-app-monitor
+  labels:
+    app: nodejs-app-monitor
+    release: prometheus
+    app.kubernetes.io/instance: prometheus
+        
+spec:
+  namespaceSelector:
+    matchNames:
+    - prom-stack
+  selector:
+    matchLabels:
+      env: dev
+ 
+  endpoints:
+    - port: metrics
+      interval: 5s
+--- 
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: stage
+  labels:
+    app: nodejs-app-monitor
+    release: prometheus
+    app.kubernetes.io/instance: prometheus
+        
+spec:
+  namespaceSelector:
+    matchNames:
+    - stage
+  selector:
+    matchLabels:
+      env: stage
+
+  endpoints:
+    - port: metrics
+      interval: 5s
