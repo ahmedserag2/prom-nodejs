@@ -1,0 +1,156 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "MongoDB Monitoring",
+    "tags": ["mongodb", "database"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Connections",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "mongodb_connections{state=\"current\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "short"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "Operations Per Second",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(mongodb_op_counters_total[5m])",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "ops"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 6,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Memory Usage",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "mongodb_memory{type=\"resident\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "bytes"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 4,
+        "title": "Document Operations",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(mongodb_op_counters_total{type=\"insert\"}[5m])",
+            "refId": "A",
+            "legendFormat": "Inserts"
+          },
+          {
+            "expr": "rate(mongodb_op_counters_total{type=\"query\"}[5m])",
+            "refId": "B",
+            "legendFormat": "Queries"
+          },
+          {
+            "expr": "rate(mongodb_op_counters_total{type=\"update\"}[5m])",
+            "refId": "C",
+            "legendFormat": "Updates"
+          },
+          {
+            "expr": "rate(mongodb_op_counters_total{type=\"delete\"}[5m])",
+            "refId": "D",
+            "legendFormat": "Deletes"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "ops"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        }
+      },
+      {
+        "id": 5,
+        "title": "Network Traffic",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(mongodb_network_bytes_total{state=\"in_bytes\"}[5m])",
+            "refId": "A",
+            "legendFormat": "In"
+          },
+          {
+            "expr": "rate(mongodb_network_bytes_total{state=\"out_bytes\"}[5m])",
+            "refId": "B",
+            "legendFormat": "Out"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "Bps"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "5s"
+  }
+}

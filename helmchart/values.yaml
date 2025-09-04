@@ -35,6 +35,20 @@ redis:
     requests:
       cpu: 50m
       memory: 64Mi
+  # Redis exporter for monitoring
+  exporter:
+    enabled: true
+    image:
+      repository: oliver006/redis_exporter
+      tag: "v1.55.0"
+    port: 9121
+    resources:
+      limits:
+        cpu: 50m
+        memory: 64Mi
+      requests:
+        cpu: 25m
+        memory: 32Mi
 
 # MongoDB Configuration  
 mongodb:
@@ -59,3 +73,21 @@ mongodb:
     requests:
       cpu: 100m
       memory: 128Mi
+  # MongoDB exporter for monitoring
+  exporter:
+    enabled: true
+    image:
+      repository: percona/mongodb_exporter
+      tag: "0.39.0"
+    port: 9216
+    resources:
+      limits:
+        cpu: 50m
+        memory: 64Mi
+      requests:
+        cpu: 25m
+        memory: 32Mi
+
+# Monitoring configuration
+monitoring:
+  enabled: true

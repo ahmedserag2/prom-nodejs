@@ -1,0 +1,166 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Redis Monitoring",
+    "tags": ["redis", "database"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Connected Clients",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "redis_connected_clients",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "short"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "Memory Usage",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "redis_memory_used_bytes",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "bytes"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 6,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "Commands Per Second",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(redis_commands_processed_total[5m])",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "ops"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 4,
+        "title": "Keyspace Hits/Misses",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "redis_keyspace_hits_total / (redis_keyspace_hits_total + redis_keyspace_misses_total) * 100",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "percent"
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 18,
+          "y": 0
+        }
+      },
+      {
+        "id": 5,
+        "title": "Keys by Database",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "redis_db_keys",
+            "refId": "A",
+            "legendFormat": "DB {{db}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "short"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        }
+      },
+      {
+        "id": 6,
+        "title": "Network I/O",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(redis_net_input_bytes_total[5m])",
+            "refId": "A",
+            "legendFormat": "Input"
+          },
+          {
+            "expr": "rate(redis_net_output_bytes_total[5m])",
+            "refId": "B",
+            "legendFormat": "Output"
+          }
+        ],
+        "yAxes": [
+          {
+            "unit": "Bps"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "5s"
+  }
+}

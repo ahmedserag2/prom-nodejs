@@ -34,6 +34,18 @@ spec:
         - name: mongodb-data
           mountPath: /data/db
         {{- end }}
+      {{- if .Values.mongodb.exporter.enabled }}
+      - name: mongodb-exporter
+        image: "{{ .Values.mongodb.exporter.image.repository }}:{{ .Values.mongodb.exporter.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.mongodb.exporter.port }}
+          name: metrics
+        env:
+        - name: MONGODB_URI
+          value: "mongodb://{{ .Values.mongodb.auth.rootUsername }}:{{ .Values.mongodb.auth.rootPassword }}@localhost:{{ .Values.mongodb.service.port }}/{{ .Values.mongodb.auth.database }}?authSource=admin"
+        resources:
+          {{- toYaml .Values.mongodb.exporter.resources | nindent 12 }}
+      {{- end }}
       {{- if .Values.mongodb.persistence.enabled }}
       volumes:
       - name: mongodb-data
@@ -54,6 +66,13 @@ spec:
     - protocol: TCP
       port: {{ .Values.mongodb.service.port }}
       targetPort: {{ .Values.mongodb.service.port }}
+      name: mongodb
+    {{- if .Values.mongodb.exporter.enabled }}
+    - protocol: TCP
+      port: {{ .Values.mongodb.exporter.port }}
+      targetPort: {{ .Values.mongodb.exporter.port }}
+      name: metrics
+    {{- end }}
 {{- if .Values.mongodb.persistence.enabled }}
 ---
 apiVersion: v1

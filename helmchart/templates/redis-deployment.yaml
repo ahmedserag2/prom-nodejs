@@ -28,6 +28,18 @@ spec:
         - name: redis-data
           mountPath: /data
         {{- end }}
+      {{- if .Values.redis.exporter.enabled }}
+      - name: redis-exporter
+        image: "{{ .Values.redis.exporter.image.repository }}:{{ .Values.redis.exporter.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.redis.exporter.port }}
+          name: metrics
+        env:
+        - name: REDIS_ADDR
+          value: "redis://localhost:{{ .Values.redis.service.port }}"
+        resources:
+          {{- toYaml .Values.redis.exporter.resources | nindent 12 }}
+      {{- end }}
       {{- if .Values.redis.persistence.enabled }}
       volumes:
       - name: redis-data
@@ -48,6 +60,13 @@ spec:
     - protocol: TCP
       port: {{ .Values.redis.service.port }}
       targetPort: {{ .Values.redis.service.port }}
+      name: redis
+    {{- if .Values.redis.exporter.enabled }}
+    - protocol: TCP
+      port: {{ .Values.redis.exporter.port }}
+      targetPort: {{ .Values.redis.exporter.port }}
+      name: metrics
+    {{- end }}
 {{- if .Values.redis.persistence.enabled }}
 ---
 apiVersion: v1

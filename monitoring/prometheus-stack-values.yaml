@@ -1,0 +1,75 @@
+kube-prometheus-stack:
+  # Prometheus configuration
+  prometheus:
+    service:
+      type: NodePort
+      nodePort: 30003
+    prometheusSpec:
+      # Service discovery configuration
+      serviceMonitorSelector:
+        matchLabels:
+          app.kubernetes.io/instance: prom-stack
+      # Storage configuration
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp2
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 10Gi
+      # Resource limits
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+        requests:
+          cpu: 500m
+          memory: 1Gi
+      # Retention policy
+      retention: 15d
+      retentionSize: "8GB"
+
+  # Grafana configuration
+  grafana:
+    enabled: true
+    adminPassword: admin123
+    service:
+      type: NodePort
+      nodePort: 30002
+    persistence:
+      enabled: true
+      storageClassName: gp2
+      size: 5Gi
+    # Enable anonymous access for demo purposes
+    grafana.ini:
+      auth.anonymous:
+        enabled: true
+        org_role: Viewer
+      server:
+        root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+        serve_from_sub_path: true
+    # Pre-configure data sources
+    datasources:
+      datasources.yaml:
+        apiVersion: 1
+        datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://prom-stack-kube-prometheus-prometheus:9090
+          access: proxy
+          isDefault: true
+
+  
+
+  # Node exporter (for node metrics)
+  nodeExporter:
+    enabled: true
+
+  # kube-state-metrics (for Kubernetes metrics)
+  kubeStateMetrics:
+    enabled: true
+
+  # Prometheus operator
+  prometheusOperator:
+    enabled: true
