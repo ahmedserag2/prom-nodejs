@@ -36,7 +36,7 @@ spec:
           name: metrics
         env:
         - name: REDIS_ADDR
-          value: "redis://localhost:{{ .Values.redis.service.port }}"
+          value: "redis://127.0.0.1:{{ .Values.redis.service.port }}"
         resources:
           {{- toYaml .Values.redis.exporter.resources | nindent 12 }}
       {{- end }}

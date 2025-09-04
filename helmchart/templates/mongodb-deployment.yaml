@@ -27,6 +27,8 @@ spec:
           value: "{{ .Values.mongodb.auth.rootPassword }}"
         - name: MONGO_INITDB_DATABASE
           value: "{{ .Values.mongodb.auth.database }}"
+        - name: MONGODB_URI
+          value: "mongodb://{{ .Values.mongodb.auth.rootUsername }}:{{ .Values.mongodb.auth.rootPassword }}@127.0.0.1:{{ .Values.mongodb.service.port }}/{{ .Values.mongodb.auth.database }}?authSource=admin"
         resources:
           {{- toYaml .Values.mongodb.resources | nindent 12 }}
         {{- if .Values.mongodb.persistence.enabled }}
@@ -42,7 +44,7 @@ spec:
           name: metrics
         env:
         - name: MONGODB_URI
-          value: "mongodb://{{ .Values.mongodb.auth.rootUsername }}:{{ .Values.mongodb.auth.rootPassword }}@localhost:{{ .Values.mongodb.service.port }}/{{ .Values.mongodb.auth.database }}?authSource=admin"
+          value: "mongodb://{{ .Values.mongodb.auth.rootUsername }}:{{ .Values.mongodb.auth.rootPassword }}@127.0.0.1:{{ .Values.mongodb.service.port }}/{{ .Values.mongodb.auth.database }}?authSource=admin"
         resources:
           {{- toYaml .Values.mongodb.exporter.resources | nindent 12 }}
       {{- end }}

@@ -1,14 +1,16 @@
-{{- if .Values.monitoring.enabled }}
 # ServiceMonitor for Node.js Application
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ .Release.Name }}-nodejs-app
+  name: prom-stack-kube-nodejs-monitor
   labels:
-    app: nodejs-app
+    app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prom-stack
     release: prom-stack
 spec:
+  namespaceSelector:
+    matchNames:
+    - nodejs-app
   selector:
     matchLabels:
       app: nodejs-app
@@ -17,17 +19,20 @@ spec:
     interval: 30s
     path: /metrics
 ---
-{{- if .Values.redis.enabled }}
+
 # ServiceMonitor for Redis
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ .Release.Name }}-redis
+  name: prom-stack-kube-redis-monitor
   labels:
-    app: redis
+    app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prom-stack
     release: prom-stack
 spec:
+  namespaceSelector:
+    matchNames:
+    - nodejs-app
   selector:
     matchLabels:
       app: redis
@@ -35,19 +40,21 @@ spec:
   - port: metrics
     interval: 30s
     path: /metrics
-{{- end }}
+
 ---
-{{- if .Values.mongodb.enabled }}
 # ServiceMonitor for MongoDB
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ .Release.Name }}-mongodb
+  name: prom-stack-kube-mongo-monitor
   labels:
-    app: mongodb
+    app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prom-stack
     release: prom-stack
 spec:
+  namespaceSelector:
+    matchNames:
+    - nodejs-app
   selector:
     matchLabels:
       app: mongodb
@@ -55,5 +62,3 @@ spec:
   - port: metrics
     interval: 30s
     path: /metrics
-{{- end }}
-{{- end }}

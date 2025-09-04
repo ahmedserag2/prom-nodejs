@@ -99,59 +99,14 @@ kubectl get servicemonitor -n nodejs-app
 # nodejs-app-redis       1m
 ```
 
-### Verify Prometheus Targets
 
-Prometheus is exposed via NodePort, so no port forwarding is needed:
-
-```bash
-# Get your node IP
-NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
-if [ -z "$NODE_IP" ]; then
-    NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
-fi
-echo "Prometheus URL: http://${NODE_IP}:30003"
-```
-
-- Open http://NODE_IP:30003
-- Go to **Status > Targets**
-- Verify all your application targets are discovered and healthy
 
 ## Part 3 - Import Grafana Dashboards
 
-### Method 1: Manual Import
+### you can import them through garfana dashboards
+- lookup the name of your exporter and the image and import the dashboard
 
-1. Access Grafana at http://NODE_IP:30002 (replace NODE_IP with your cluster node IP)
-2. Login with admin/admin123
-3. Go to **+ > Import**
-4. Copy and paste the dashboard JSON from:
-   - `monitoring/grafana-dashboards/nodejs-dashboard.json`
-   - `monitoring/grafana-dashboards/redis-dashboard.json`
-   - `monitoring/grafana-dashboards/mongodb-dashboard.json`
 
-### Method 2: ConfigMap Import
-
-```bash
-# Create ConfigMaps for dashboards
-kubectl create configmap nodejs-dashboard \
-  --from-file=monitoring/grafana-dashboards/nodejs-dashboard.json \
-  -n monitoring
-
-kubectl create configmap redis-dashboard \
-  --from-file=monitoring/grafana-dashboards/redis-dashboard.json \
-  -n monitoring
-
-kubectl create configmap mongodb-dashboard \
-  --from-file=monitoring/grafana-dashboards/mongodb-dashboard.json \
-  -n monitoring
-
-# Label them for Grafana to discover
-kubectl label configmap nodejs-dashboard grafana_dashboard=1 -n monitoring
-kubectl label configmap redis-dashboard grafana_dashboard=1 -n monitoring
-kubectl label configmap mongodb-dashboard grafana_dashboard=1 -n monitoring
-
-# Restart Grafana to pick up new dashboards
-kubectl rollout restart deployment prom-stack-grafana -n monitoring
-```
 
 ## Part 4 - Generate Test Traffic
 
@@ -262,119 +217,9 @@ rate(mongodb_op_counters_total[5m])
 mongodb_memory{type="resident"}
 ```
 
-## Part 6 - Alerting Setup
 
-### Create Alert Rules
 
-```bash
-# Create alert rules file
-cat > monitoring/alert-rules.yaml << 'EOF'
-apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRule
-metadata:
-  name: nodejs-app-alerts
-  namespace: nodejs-app
-  labels:
-    app.kubernetes.io/instance: prom-stack
-    prometheus: kube-prometheus
-    role: alert-rules
-spec:
-  groups:
-  - name: nodejs-app
-    rules:
-    - alert: NodejsAppDown
-      expr: up{job="nodejs-app-nodejs-app-service"} == 0
-      for: 1m
-      labels:
-        severity: critical
-      annotations:
-        summary: "Node.js application is down"
-        description: "Node.js application has been down for more than 1 minute"
-    
-    - alert: HighResponseTime
-      expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
-      for: 2m
-      labels:
-        severity: warning
-      annotations:
-        summary: "High response time detected"
-        description: "95th percentile response time is {{ $value }}s"
-    
-    - alert: RedisDown
-      expr: up{job="nodejs-app-redis-service"} == 0
-      for: 1m
-      labels:
-        severity: critical
-      annotations:
-        summary: "Redis is down"
-        description: "Redis has been down for more than 1 minute"
-    
-    - alert: MongoDBDown
-      expr: up{job="nodejs-app-mongodb-service"} == 0
-      for: 1m
-      labels:
-        severity: critical
-      annotations:
-        summary: "MongoDB is down"
-        description: "MongoDB has been down for more than 1 minute"
-EOF
 
-# Apply the alert rules
-kubectl apply -f monitoring/alert-rules.yaml
-```
-
-### Access AlertManager
-
-```bash
-# Port forward to AlertManager (still requires port forwarding)
-kubectl port-forward service/prom-stack-kube-prometheus-alertmanager 9093:9093 -n monitoring
-```
-
-Visit http://localhost:9093 to see alerts.
-
-> Note: AlertManager is not exposed via NodePort by default. Use port forwarding or configure NodePort if needed.
-
-## Part 7 - Troubleshooting
-
-### Common Issues
-
-1. **ServiceMonitor not discovered**:
-   ```bash
-   # Check ServiceMonitor labels
-   kubectl get servicemonitor -n nodejs-app --show-labels
-   
-   # Ensure they have the correct labels for Prometheus to discover
-   kubectl patch servicemonitor nodejs-app-nodejs-app -n nodejs-app -p '{"metadata":{"labels":{"app.kubernetes.io/instance":"prom-stack"}}}'
-   ```
-
-2. **Targets not showing in Prometheus**:
-   ```bash
-   # Check Prometheus configuration
-   kubectl get prometheus -n monitoring -o yaml
-   
-   # Check ServiceMonitor selector
-   kubectl describe prometheus prom-stack-kube-prometheus-prometheus -n monitoring
-   ```
-
-3. **Exporters not working**:
-   ```bash
-   # Check exporter logs
-   kubectl logs deployment/nodejs-app-redis -c redis-exporter -n nodejs-app
-   kubectl logs deployment/nodejs-app-mongodb -c mongodb-exporter -n nodejs-app
-   
-   # Test exporter endpoints
-   kubectl port-forward deployment/nodejs-app-redis 9121:9121 -n nodejs-app
-   curl http://localhost:9121/metrics
-   ```
-
-4. **Grafana dashboards not loading**:
-   ```bash
-   # Check Grafana logs
-   kubectl logs deployment/prom-stack-grafana -n monitoring
-   
-   # Verify data source configuration
-   kubectl exec -it deployment/prom-stack-grafana -n monitoring -- grafana-cli admin reset-admin-password admin123
-   ```
 
 ### Useful Commands
 
@@ -400,7 +245,7 @@ kubectl port-forward svc/nodejs-app-redis 9121:9121 -n nodejs-app
 curl http://localhost:9121/metrics | grep redis_connected_clients
 
 kubectl port-forward svc/nodejs-app-mongodb 9216:9216 -n nodejs-app
-curl http://localhost:9216/metrics | grep mongodb_connections
+curl http://localhost:9216/metrics | grep process_virtual_memory_max_bytes
 ```
 
 ## Part 8 - Cleanup
@@ -429,14 +274,6 @@ helm uninstall nodejs-app -n nodejs-app
 kubectl delete namespace nodejs-app
 ```
 
-## Summary
+### reference:
+https://apgapg.medium.com/creating-a-service-monitor-in-kubernetes-c0941a63c227
 
-You now have a complete monitoring setup with:
-- ✅ Prometheus collecting metrics from all services
-- ✅ Grafana with pre-built dashboards
-- ✅ Redis and MongoDB exporters
-- ✅ Service discovery via ServiceMonitors
-- ✅ Alerting rules for critical issues
-- ✅ Load testing capabilities
-
-Your monitoring stack will automatically discover and monitor your Node.js application, Redis, and MongoDB instances, providing comprehensive observability into your application's performance and health.

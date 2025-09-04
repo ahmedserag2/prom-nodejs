@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-nodejs-app-service
   labels:
-    env: stage
+    app: nodejs-app
 spec:
   selector:
     app: nodejs-app

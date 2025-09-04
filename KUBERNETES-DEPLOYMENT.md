@@ -54,8 +54,8 @@ helm version
 ### Clone the repository
 
 ```bash
-git clone <your-repository-url>
-cd nodejs-app
+git clone https://github.com/ahmedserag2/prom-nodejs.git
+cd prom-nodejs
 ```
 
 ## Part 2 - Local Development with Docker Compose
@@ -173,34 +173,9 @@ kubectl get nodes
 
 ```bash
 kubectl create namespace nodejs-app
-kubectl config set-context --current --namespace=nodejs-app
 ```
 
-### Set up storage classes (if needed)
 
-- For AWS EKS, ensure EBS CSI driver is installed:
-
-```bash
-eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=your-cluster --approve
-
-eksctl create iamserviceaccount \
-    --name ebs-csi-controller-sa \
-    --namespace kube-system \
-    --cluster your-cluster \
-    --role-name AmazonEKS_EBS_CSI_DriverRole \
-    --role-only \
-    --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
-    --region us-east-1 \
-    --approve
-
-eksctl create addon --name aws-ebs-csi-driver --cluster your-cluster --service-account-role-arn arn:aws:iam::ACCOUNT_ID:role/AmazonEKS_EBS_CSI_DriverRole --force
-```
-
-- Verify storage classes:
-
-```bash
-kubectl get storageclass
-```
 
 ## Part 5 - Deploying with Helm Charts
 
@@ -215,7 +190,7 @@ The Helm chart includes:
 
 ### Update Helm values
 
-- Edit `helmchart/values.yaml` to match your environment:
+- Edit `helmchart/values.yaml` to match your environment: ** If you deploy with the current helm chart setup it will work right off the box**
 
 ```yaml
 image:
@@ -256,15 +231,15 @@ helm upgrade nodejs-app ./helmchart --namespace nodejs-app
 
 ```bash
 # Check all resources
-kubectl get all
+kubectl get all -n nodejs-app
 
 # Check persistent volumes
-kubectl get pv,pvc
+kubectl get pv,pvc -n nodejs-app
 
 # Check pod logs
-kubectl logs deployment/nodejs-app-nodejs-app
-kubectl logs deployment/nodejs-app-redis
-kubectl logs deployment/nodejs-app-mongodb
+kubectl logs deployment/nodejs-app-nodejs-app -n nodejs-app
+kubectl logs deployment/nodejs-app-redis -n nodejs-app
+kubectl logs deployment/nodejs-app-mongodb -n nodejs-app
 ```
 
 Expected output should show all pods running:
