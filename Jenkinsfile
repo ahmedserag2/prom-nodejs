@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     parameters {
-        string(name: 'DOCKER_REGISTRY', defaultValue: 'index.docker.io/v1/', description: 'Docker registry URL')
+        string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.io', description: 'Docker registry URL')
         string(name: 'DOCKER_NAMESPACE', defaultValue: '01447', description: 'Docker Hub username')
         choice(name: 'TARGET_ENVIRONMENT', choices: ['dev', 'qa', 'staging', 'prod'], description: 'Target deployment environment')
         booleanParam(name: 'FORCE_REBUILD', defaultValue: false, description: 'Force rebuild even if image exists')
