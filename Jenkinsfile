@@ -121,7 +121,8 @@ pipeline {
                             
                             // Also tag as latest for dev environment
                             if (params.TARGET_ENVIRONMENT == 'dev') {
-                                image.tag("${env.DOCKER_IMAGE}:${env.LATEST_TAG}")
+                                image.tag("${env.LATEST_TAG}")
+                                echo "🏷️  Tagged image as: ${env.DOCKER_IMAGE}:${env.LATEST_TAG}"
                             }
                             
                             echo "✅ Docker image built successfully: ${env.DOCKER_IMAGE}:${env.BUILD_TAG}"
