@@ -211,30 +211,6 @@ pipeline {
             }
         }
         
-        stage('Deploy to QA') {
-            when {
-                expression { params.TARGET_ENVIRONMENT == 'qa' }
-            }
-            steps {
-                script {
-                    echo "🚀 Deploying to QA environment..."
-                    
-                    // Deploy to QA environment
-                    deployToEnvironment('qa', QA_NAMESPACE, QA_KUBE_CONTEXT)
-                    
-                    echo "✅ Deployment to QA completed"
-                }
-            }
-            post {
-                success {
-                    echo "🎉 QA deployment successful!"
-                }
-                failure {
-                    echo "❌ QA deployment failed!"
-                }
-            }
-        }
-        
         stage('QA Approval') {
             when {
                 expression { params.TARGET_ENVIRONMENT == 'qa' }
@@ -264,26 +240,26 @@ pipeline {
             }
         }
         
-        stage('Deploy to Staging') {
+        stage('Deploy to QA') {
             when {
-                expression { params.TARGET_ENVIRONMENT == 'staging' }
+                expression { params.TARGET_ENVIRONMENT == 'qa' }
             }
             steps {
                 script {
-                    echo "🚀 Deploying to Staging environment..."
+                    echo "🚀 Deploying to QA environment..."
                     
-                    // Deploy to Staging environment
-                    deployToEnvironment('staging', STAGING_NAMESPACE, STAGING_KUBE_CONTEXT)
+                    // Deploy to QA environment
+                    deployToEnvironment('qa', QA_NAMESPACE, QA_KUBE_CONTEXT)
                     
-                    echo "✅ Deployment to Staging completed"
+                    echo "✅ Deployment to QA completed"
                 }
             }
             post {
                 success {
-                    echo "🎉 Staging deployment successful!"
+                    echo "🎉 QA deployment successful!"
                 }
                 failure {
-                    echo "❌ Staging deployment failed!"
+                    echo "❌ QA deployment failed!"
                 }
             }
         }
@@ -310,26 +286,26 @@ pipeline {
             }
         }
         
-        stage('Deploy to Production') {
+        stage('Deploy to Staging') {
             when {
-                expression { params.TARGET_ENVIRONMENT == 'prod' }
+                expression { params.TARGET_ENVIRONMENT == 'staging' }
             }
             steps {
                 script {
-                    echo "🚀 Deploying to Production environment..."
+                    echo "🚀 Deploying to Staging environment..."
                     
-                    // Deploy to Production environment
-                    deployToEnvironment('prod', PROD_NAMESPACE, PROD_KUBE_CONTEXT)
+                    // Deploy to Staging environment
+                    deployToEnvironment('staging', STAGING_NAMESPACE, STAGING_KUBE_CONTEXT)
                     
-                    echo "✅ Deployment to Production completed"
+                    echo "✅ Deployment to Staging completed"
                 }
             }
             post {
                 success {
-                    echo "🎉 Production deployment successful!"
+                    echo "🎉 Staging deployment successful!"
                 }
                 failure {
-                    echo "❌ Production deployment failed!"
+                    echo "❌ Staging deployment failed!"
                 }
             }
         }
@@ -352,6 +328,30 @@ pipeline {
                           ]
                     
                     echo "✅ Production deployment approved"
+                }
+            }
+        }
+        
+        stage('Deploy to Production') {
+            when {
+                expression { params.TARGET_ENVIRONMENT == 'prod' }
+            }
+            steps {
+                script {
+                    echo "🚀 Deploying to Production environment..."
+                    
+                    // Deploy to Production environment
+                    deployToEnvironment('prod', PROD_NAMESPACE, PROD_KUBE_CONTEXT)
+                    
+                    echo "✅ Deployment to Production completed"
+                }
+            }
+            post {
+                success {
+                    echo "🎉 Production deployment successful!"
+                }
+                failure {
+                    echo "❌ Production deployment failed!"
                 }
             }
         }
