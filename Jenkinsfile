@@ -187,12 +187,7 @@ pipeline {
         }
         
         stage('Deploy to Dev') {
-            when {
-                allOf {
-                    expression { params.TARGET_ENVIRONMENT == 'dev' }
-                    branch 'main'
-                }
-            }
+            
             steps {
                 script {
                     echo "🚀 Deploying to Development environment..."
@@ -215,9 +210,7 @@ pipeline {
         }
         
         stage('QA Approval') {
-            when {
-                expression { params.TARGET_ENVIRONMENT == 'qa' }
-            }
+            
             steps {
                 script {
                     echo "⏳ Waiting for QA team approval..."
@@ -244,9 +237,7 @@ pipeline {
         }
         
         stage('Deploy to QA') {
-            when {
-                expression { params.TARGET_ENVIRONMENT == 'qa' }
-            }
+            
             steps {
                 script {
                     echo "🚀 Deploying to QA environment..."
@@ -268,12 +259,7 @@ pipeline {
         }
         
         stage('Staging Approval') {
-            when {
-                allOf {
-                    expression { params.TARGET_ENVIRONMENT == 'staging' }
-                    branch 'main'
-                }
-            }
+            
             steps {
                 script {
                     echo "⏳ Waiting for Staging approval..."
@@ -293,12 +279,7 @@ pipeline {
         }
         
         stage('Deploy to Staging') {
-            when {
-                allOf {
-                    expression { params.TARGET_ENVIRONMENT == 'staging' }
-                    branch 'main'
-                }
-            }
+            
             steps {
                 script {
                     echo "🚀 Deploying to Staging environment..."
@@ -320,12 +301,7 @@ pipeline {
         }
         
         stage('Production Approval') {
-            when {
-                allOf {
-                    expression { params.TARGET_ENVIRONMENT == 'prod' }
-                    branch 'main'
-                }
-            }
+            
             steps {
                 script {
                     echo "⏳ Waiting for Production approval..."
@@ -345,12 +321,7 @@ pipeline {
         }
         
         stage('Deploy to Production') {
-            when {
-                allOf {
-                    expression { params.TARGET_ENVIRONMENT == 'prod' }
-                    branch 'main'
-                }
-            }
+            
             steps {
                 script {
                     echo "🚀 Deploying to Production environment..."
