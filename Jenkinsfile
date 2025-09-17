@@ -2,15 +2,15 @@ pipeline {
     agent any
     
     parameters {
-        string(name: 'DOCKER_REGISTRY', defaultValue: 'your-registry.com', description: 'Docker registry URL')
-        string(name: 'DOCKER_NAMESPACE', defaultValue: 'nodejs-app', description: 'Docker image namespace')
+        string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.io', description: 'Docker registry URL')
+        string(name: 'DOCKER_NAMESPACE', defaultValue: 'your-dockerhub-username', description: 'Docker Hub username')
         choice(name: 'TARGET_ENVIRONMENT', choices: ['dev', 'qa', 'staging', 'prod'], description: 'Target deployment environment')
         booleanParam(name: 'FORCE_REBUILD', defaultValue: false, description: 'Force rebuild even if image exists')
         booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip test execution')
     }
     
     environment {
-        APP_NAME = 'nodejs-app'
+        APP_NAME = 'monitoring-nodejs'
         DOCKER_IMAGE = "${params.DOCKER_REGISTRY}/${params.DOCKER_NAMESPACE}/${APP_NAME}"
         GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
         BUILD_TAG = "${env.BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
