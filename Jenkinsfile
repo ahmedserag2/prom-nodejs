@@ -346,38 +346,38 @@ pipeline {
         }
     }
     
-    post {
-        always {
-            script {
-                echo "🏁 Pipeline execution completed"
-                echo "📊 Build Summary:"
-                echo "   - Build Number: ${env.BUILD_NUMBER}"
-                echo "   - Git Commit: ${env.GIT_COMMIT_SHORT}"
-                echo "   - Docker Image: ${DOCKER_IMAGE}:${BUILD_TAG}"
-                echo "   - Target Environment: ${params.TARGET_ENVIRONMENT}"
-                echo "   - Build Status: ${currentBuild.result ?: 'SUCCESS'}"
-            }
-        }
+    // post {
+    //     always {
+    //         script {
+    //             echo "🏁 Pipeline execution completed"
+    //             echo "📊 Build Summary:"
+    //             echo "   - Build Number: ${env.BUILD_NUMBER}"
+    //             echo "   - Git Commit: ${env.GIT_COMMIT_SHORT}"
+    //             echo "   - Docker Image: ${DOCKER_IMAGE}:${BUILD_TAG}"
+    //             echo "   - Target Environment: ${params.TARGET_ENVIRONMENT}"
+    //             echo "   - Build Status: ${currentBuild.result ?: 'SUCCESS'}"
+    //         }
+    //     }
         
-        success {
-            echo "🎉 Pipeline completed successfully!"
-            // Add success notifications here
-        }
+    //     success {
+    //         echo "🎉 Pipeline completed successfully!"
+    //         // Add success notifications here
+    //     }
         
-        failure {
-            echo "❌ Pipeline failed!"
-            // Add failure notifications here
-        }
+    //     failure {
+    //         echo "❌ Pipeline failed!"
+    //         // Add failure notifications here
+    //     }
         
-        unstable {
-            echo "⚠️  Pipeline completed with warnings!"
-        }
+    //     unstable {
+    //         echo "⚠️  Pipeline completed with warnings!"
+    //     }
         
-        cleanup {
-            // Clean up workspace
-            cleanWs()
-        }
-    }
+    //     // cleanup {
+    //     //     // Clean up workspace
+    //     //     cleanWs()
+    //     // }
+    // }
 }
 
 // Helper function for deployment
