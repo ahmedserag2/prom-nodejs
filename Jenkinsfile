@@ -3,7 +3,7 @@ pipeline {
     
     parameters {
         string(name: 'DOCKER_REGISTRY', defaultValue: 'docker.io', description: 'Docker registry URL')
-        string(name: 'DOCKER_NAMESPACE', defaultValue: 'your-dockerhub-username', description: 'Docker Hub username')
+        string(name: 'DOCKER_NAMESPACE', defaultValue: '01447', description: 'Docker Hub username')
         choice(name: 'TARGET_ENVIRONMENT', choices: ['dev', 'qa', 'staging', 'prod'], description: 'Target deployment environment')
         booleanParam(name: 'FORCE_REBUILD', defaultValue: false, description: 'Force rebuild even if image exists')
         booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip test execution')
