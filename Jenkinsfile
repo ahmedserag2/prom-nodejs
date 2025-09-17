@@ -12,8 +12,6 @@ pipeline {
     environment {
         APP_NAME = 'monitoring-nodejs'
         DOCKER_IMAGE = "${params.DOCKER_REGISTRY}/${params.DOCKER_NAMESPACE}/${APP_NAME}"
-        GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-        BUILD_TAG = "${env.BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
         LATEST_TAG = 'latest'
         
         // Environment-specific configurations
@@ -59,6 +57,13 @@ pipeline {
                     // Checkout source code
                     checkout scm
                     
+                    // Get git commit short hash after checkout
+                    env.GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    env.BUILD_TAG = "${env.BUILD_NUMBER}-${env.GIT_COMMIT_SHORT}"
+                    
+                    echo "📝 Build Tag: ${env.BUILD_TAG}"
+                    echo "🔗 Git Commit: ${env.GIT_COMMIT_SHORT}"
+                    
                     // Validate required files
                     if (!fileExists('package.json')) {
                         error "❌ package.json not found!"
@@ -81,7 +86,7 @@ pipeline {
                     def imageExists = false
                     try {
                         def imageCheck = sh(
-                            script: "docker manifest inspect ${DOCKER_IMAGE}:${BUILD_TAG}",
+                            script: "docker manifest inspect ${env.DOCKER_IMAGE}:${env.BUILD_TAG}",
                             returnStatus: true
                         )
                         imageExists = (imageCheck == 0)
@@ -91,10 +96,10 @@ pipeline {
                     }
                     
                     if (imageExists && !params.FORCE_REBUILD) {
-                        echo "✅ Docker image ${DOCKER_IMAGE}:${BUILD_TAG} already exists"
+                        echo "✅ Docker image ${env.DOCKER_IMAGE}:${env.BUILD_TAG} already exists"
                         env.SKIP_BUILD = 'true'
                     } else {
-                        echo "🔨 Docker image ${DOCKER_IMAGE}:${BUILD_TAG} not found, will build"
+                        echo "🔨 Docker image ${env.DOCKER_IMAGE}:${env.BUILD_TAG} not found, will build"
                         env.SKIP_BUILD = 'false'
                     }
                 }
@@ -112,14 +117,14 @@ pipeline {
                             echo "🐳 Building Docker image..."
                             
                             // Build Docker image
-                            def image = docker.build("${DOCKER_IMAGE}:${BUILD_TAG}", ".")
+                            def image = docker.build("${env.DOCKER_IMAGE}:${env.BUILD_TAG}", ".")
                             
                             // Also tag as latest for dev environment
                             if (params.TARGET_ENVIRONMENT == 'dev') {
-                                image.tag("${DOCKER_IMAGE}:${LATEST_TAG}")
+                                image.tag("${env.DOCKER_IMAGE}:${env.LATEST_TAG}")
                             }
                             
-                            echo "✅ Docker image built successfully: ${DOCKER_IMAGE}:${BUILD_TAG}"
+                            echo "✅ Docker image built successfully: ${env.DOCKER_IMAGE}:${env.BUILD_TAG}"
                         }
                     }
                     post {
@@ -161,12 +166,12 @@ pipeline {
                     
                     // Push the tagged image
                     docker.withRegistry("https://${params.DOCKER_REGISTRY}", 'docker-registry-credentials') {
-                        def image = docker.image("${DOCKER_IMAGE}:${BUILD_TAG}")
+                        def image = docker.image("${env.DOCKER_IMAGE}:${env.BUILD_TAG}")
                         image.push()
                         
                         // Push latest tag for dev
                         if (params.TARGET_ENVIRONMENT == 'dev') {
-                            image.push("${LATEST_TAG}")
+                            image.push("${env.LATEST_TAG}")
                         }
                     }
                     
@@ -353,7 +358,7 @@ pipeline {
     //             echo "📊 Build Summary:"
     //             echo "   - Build Number: ${env.BUILD_NUMBER}"
     //             echo "   - Git Commit: ${env.GIT_COMMIT_SHORT}"
-    //             echo "   - Docker Image: ${DOCKER_IMAGE}:${BUILD_TAG}"
+    //             echo "   - Docker Image: ${env.DOCKER_IMAGE}:${env.BUILD_TAG}"
     //             echo "   - Target Environment: ${params.TARGET_ENVIRONMENT}"
     //             echo "   - Build Status: ${currentBuild.result ?: 'SUCCESS'}"
     //         }
@@ -385,7 +390,7 @@ def deployToEnvironment(environment, namespace, kubeContext) {
     echo "🔧 Deploying to ${environment} environment..."
     echo "   - Namespace: ${namespace}"
     echo "   - Kubernetes Context: ${kubeContext}"
-    echo "   - Docker Image: ${DOCKER_IMAGE}:${BUILD_TAG}"
+    echo "   - Docker Image: ${env.DOCKER_IMAGE}:${env.BUILD_TAG}"
     
     // Here you would implement your actual deployment logic
     // This could be:
@@ -396,8 +401,8 @@ def deployToEnvironment(environment, namespace, kubeContext) {
     // For now, we'll simulate deployment
     sh """
         echo "Simulating deployment to ${environment}..."
-        echo "kubectl --context=${kubeContext} set image deployment/${APP_NAME} ${APP_NAME}=${DOCKER_IMAGE}:${BUILD_TAG} -n ${namespace}"
-        echo "kubectl --context=${kubeContext} rollout status deployment/${APP_NAME} -n ${namespace}"
+        echo "kubectl --context=${kubeContext} set image deployment/${env.APP_NAME} ${env.APP_NAME}=${env.DOCKER_IMAGE}:${env.BUILD_TAG} -n ${namespace}"
+        echo "kubectl --context=${kubeContext} rollout status deployment/${env.APP_NAME} -n ${namespace}"
         echo "✅ Deployment simulation completed for ${environment}"
     """
     
@@ -412,7 +417,7 @@ def waitForDeploymentHealth(environment, namespace, kubeContext) {
     // Simulate health check
     sh """
         echo "Checking if pods are ready..."
-        echo "kubectl --context=${kubeContext} get pods -l app=${APP_NAME} -n ${namespace}"
+        echo "kubectl --context=${kubeContext} get pods -l app=${env.APP_NAME} -n ${namespace}"
         echo "✅ Health check completed for ${environment}"
     """
 }
