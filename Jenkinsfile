@@ -7,6 +7,7 @@ pipeline {
         choice(name: 'TARGET_ENVIRONMENT', choices: ['dev', 'qa', 'staging', 'prod'], description: 'Target deployment environment')
         booleanParam(name: 'FORCE_REBUILD', defaultValue: false, description: 'Force rebuild even if image exists')
         booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip test execution')
+        booleanParam(name: 'CHECKOUT_LATEST_TAG', defaultValue: false, description: 'Checkout latest git tag instead of current branch/commit')
     }
     
     environment {
@@ -50,6 +51,7 @@ pipeline {
                     echo "   - Force Rebuild: ${params.FORCE_REBUILD}"
                     echo "   - Skip Tests: ${params.SKIP_TESTS}"
                     echo "   - Docker Registry: ${params.DOCKER_REGISTRY}"
+                    echo "   - Checkout Latest Tag: ${params.CHECKOUT_LATEST_TAG}"
                     
                     // Clean workspace
                     cleanWs()
@@ -57,12 +59,48 @@ pipeline {
                     // Checkout source code
                     checkout scm
                     
+                    // Check if we should checkout latest tag
+                    if (params.CHECKOUT_LATEST_TAG) {
+                        echo "🏷️  Checking for latest tags..."
+                        def latestTag = sh(
+                            script: "git describe --tags --abbrev=0 2>/dev/null || echo 'no-tags'",
+                            returnStdout: true
+                        ).trim()
+                        
+                        if (latestTag != 'no-tags') {
+                            echo "📌 Latest tag found: ${latestTag}"
+                            
+                            // Check if we should checkout based on latest tag
+                            def shouldCheckoutTag = sh(
+                                script: "git rev-list --count HEAD ^${latestTag}",
+                                returnStdout: true
+                            ).trim().toInteger()
+                            
+                            if (shouldCheckoutTag > 0) {
+                                echo "🔄 Checking out latest tag: ${latestTag}"
+                                sh "git checkout ${latestTag}"
+                            } else {
+                                echo "✅ Already on latest tag: ${latestTag}"
+                            }
+                        } else {
+                            echo "⚠️  No tags found, staying on current branch/commit"
+                        }
+                    } else {
+                        echo "📝 Using current branch/commit (CHECKOUT_LATEST_TAG is false)"
+                    }
+                    
                     // Get git commit short hash after checkout
                     env.GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    env.GIT_TAG = sh(script: "git describe --tags --exact-match HEAD 2>/dev/null || echo ''", returnStdout: true).trim()
                     env.BUILD_TAG = "${env.BUILD_NUMBER}-${env.GIT_COMMIT_SHORT}"
                     
                     echo "📝 Build Tag: ${env.BUILD_TAG}"
                     echo "🔗 Git Commit: ${env.GIT_COMMIT_SHORT}"
+                    if (env.GIT_TAG) {
+                        echo "🏷️  Git Tag: ${env.GIT_TAG}"
+                        // Use tag as build tag if we're on a tag
+                        env.BUILD_TAG = "${env.GIT_TAG}-${env.BUILD_NUMBER}"
+                    }
                     
                     // Validate required files
                     if (!fileExists('package.json')) {
