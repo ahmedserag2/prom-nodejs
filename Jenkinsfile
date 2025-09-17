@@ -50,7 +50,6 @@ pipeline {
                     echo "   - Force Rebuild: ${params.FORCE_REBUILD}"
                     echo "   - Skip Tests: ${params.SKIP_TESTS}"
                     echo "   - Docker Registry: ${params.DOCKER_REGISTRY}"
-                    echo "   - Current Branch: ${env.BRANCH_NAME ?: env.GIT_BRANCH ?: 'unknown'}"
                     
                     // Clean workspace
                     cleanWs()
@@ -217,10 +216,7 @@ pipeline {
         
         stage('QA Approval') {
             when {
-                allOf {
-                    expression { params.TARGET_ENVIRONMENT == 'qa' }
-                    branch 'main'
-                }
+                expression { params.TARGET_ENVIRONMENT == 'qa' }
             }
             steps {
                 script {
@@ -249,10 +245,7 @@ pipeline {
         
         stage('Deploy to QA') {
             when {
-                allOf {
-                    expression { params.TARGET_ENVIRONMENT == 'qa' }
-                    branch 'main'
-                }
+                expression { params.TARGET_ENVIRONMENT == 'qa' }
             }
             steps {
                 script {
