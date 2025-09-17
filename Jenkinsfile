@@ -50,6 +50,7 @@ pipeline {
                     echo "   - Force Rebuild: ${params.FORCE_REBUILD}"
                     echo "   - Skip Tests: ${params.SKIP_TESTS}"
                     echo "   - Docker Registry: ${params.DOCKER_REGISTRY}"
+                    echo "   - Current Branch: ${env.BRANCH_NAME ?: env.GIT_BRANCH ?: 'unknown'}"
                     
                     // Clean workspace
                     cleanWs()
@@ -188,7 +189,10 @@ pipeline {
         
         stage('Deploy to Dev') {
             when {
-                expression { params.TARGET_ENVIRONMENT == 'dev' }
+                allOf {
+                    expression { params.TARGET_ENVIRONMENT == 'dev' }
+                    branch 'main'
+                }
             }
             steps {
                 script {
@@ -213,7 +217,10 @@ pipeline {
         
         stage('QA Approval') {
             when {
-                expression { params.TARGET_ENVIRONMENT == 'qa' }
+                allOf {
+                    expression { params.TARGET_ENVIRONMENT == 'qa' }
+                    branch 'main'
+                }
             }
             steps {
                 script {
@@ -242,7 +249,10 @@ pipeline {
         
         stage('Deploy to QA') {
             when {
-                expression { params.TARGET_ENVIRONMENT == 'qa' }
+                allOf {
+                    expression { params.TARGET_ENVIRONMENT == 'qa' }
+                    branch 'main'
+                }
             }
             steps {
                 script {
@@ -266,7 +276,10 @@ pipeline {
         
         stage('Staging Approval') {
             when {
-                expression { params.TARGET_ENVIRONMENT == 'staging' }
+                allOf {
+                    expression { params.TARGET_ENVIRONMENT == 'staging' }
+                    branch 'main'
+                }
             }
             steps {
                 script {
@@ -288,7 +301,10 @@ pipeline {
         
         stage('Deploy to Staging') {
             when {
-                expression { params.TARGET_ENVIRONMENT == 'staging' }
+                allOf {
+                    expression { params.TARGET_ENVIRONMENT == 'staging' }
+                    branch 'main'
+                }
             }
             steps {
                 script {
@@ -312,7 +328,10 @@ pipeline {
         
         stage('Production Approval') {
             when {
-                expression { params.TARGET_ENVIRONMENT == 'prod' }
+                allOf {
+                    expression { params.TARGET_ENVIRONMENT == 'prod' }
+                    branch 'main'
+                }
             }
             steps {
                 script {
@@ -334,7 +353,10 @@ pipeline {
         
         stage('Deploy to Production') {
             when {
-                expression { params.TARGET_ENVIRONMENT == 'prod' }
+                allOf {
+                    expression { params.TARGET_ENVIRONMENT == 'prod' }
+                    branch 'main'
+                }
             }
             steps {
                 script {
