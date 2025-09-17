@@ -165,8 +165,13 @@ pipeline {
                 script {
                     echo "📤 Pushing Docker image to registry..."
                     
+                    // Test Docker Hub connectivity
+                    echo "🔍 Testing Docker Hub connectivity..."
+                    sh "docker info"
+                    sh "docker system info | grep -i registry"
+                    
                     // Push the tagged image
-                    docker.withRegistry("https://${params.DOCKER_REGISTRY}", 'docker-registry-credentials') {
+                    docker.withRegistry("https://index.docker.io/v1/", 'docker-registry-credentials') {
                         def image = docker.image("${env.DOCKER_IMAGE}:${env.BUILD_TAG}")
                         image.push()
                         
