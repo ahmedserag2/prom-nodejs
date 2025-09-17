@@ -168,7 +168,7 @@ pipeline {
                     // Test Docker Hub connectivity
                     echo "🔍 Testing Docker Hub connectivity..."
                     sh "docker info"
-                    sh "docker system info | grep -i registry"
+                    //sh "docker system info | grep -i registry"
                     
                     // Push the tagged image
                     docker.withRegistry("https://index.docker.io/v1/", 'docker-registry-credentials') {
